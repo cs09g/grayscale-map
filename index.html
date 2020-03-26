@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <link href="https://api.mapbox.com/mapbox-gl-js/v1.8.0/mapbox-gl.css" rel="stylesheet">
+  <link href="./src/style/preview.css" rel="stylesheet">
+</head>
+
+<body>
+  <div class="container">
+    <div id="map" class="map"></div>
+    <div class="sidemenu">
+      <div class="title">Options</div>
+      <div class="sub-menu">
+        <h3>RGB coefficient</h3>
+        <div class="forms">
+          <label for="red-coefficient">Red: </label>
+          <input id="red-coefficient" type="number" value="0.2126" step="0.0001" min="0" max="1">
+          <label for="green-coefficient">Green: </label>
+          <input id="green-coefficient" type="number" value="0.7152" step="0.0001" min="0" max="1">
+          <label for="blue-coefficient">Blue: </label>
+          <input id="blue-coefficient" type="number" value="0.0722" step="0.0001" min="0" max="1">
+        </div>
+      </div>
+      <div class="sub-menu">
+        <h3>RGB weight</h3>
+        <div class="forms">
+          <label for="red-weight">Red: </label>
+          <input id="red-weight" type="number" value="0" step="0.01" min="0" max="1">
+          <label for="green-weight">Green: </label>
+          <input id="green-weight" type="number" value="0" step="0.01" min="0" max="1">
+          <label for="blue-weight">Blue: </label>
+          <input id="blue-weight" type="number" value="0" step="0.01" min="0" max="1">
+        </div>
+      </div>
+    </div>
+  </div>
+  <script src="https://api.mapbox.com/mapbox-gl-js/v1.8.0/mapbox-gl.js"></script>
+  <script src="./src/script/preview.js"></script>
+  <script>
+    const shader = new Shader({
+      container: document.querySelector(".container"),
+    });
+  </script>
+</body>
+
+</html>

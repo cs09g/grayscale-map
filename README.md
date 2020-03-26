@@ -1,2 +1,1 @@
-# try-custom-shading
-customize map's tone
+# map-shading
