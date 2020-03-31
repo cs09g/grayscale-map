@@ -1,1 +1,1 @@
-# map-shading
+# grayscale-map

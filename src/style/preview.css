@@ -1,19 +1,16 @@
 body {
   margin: 0;
 }
-
 .container {
   position: absolute;
   width: 100%;
   height: 100%;
 }
-
 .container .map {
   width: 100%;
   height: 100%;
   position: absolute;
 }
-
 .container .sidemenu {
   position: absolute;
   top: 0;
@@ -21,14 +18,130 @@ body {
   background: white;
   padding: 20px;
 }
-
 .container .title {
   margin: 0;
   font-size: x-large;
   font-weight: bold;
 }
-
 .container .sidemenu .forms {
   display: flex;
   flex-direction: column;
+}
+.container .sidemenu .forms .slider-wrapper {
+  display: flex;
+}
+.container .sidemenu .forms .slider-wrapper input {
+  width: 100%;
+}
+.container .sidemenu .forms .slider-wrapper .text,
+.container .sidemenu .forms .slider-wrapper label {
+  width: 25px;
+}
+.container .sidemenu .forms .slider-distance {
+  position: relative;
+  height: 14px;
+  border-radius: 10px;
+  text-align: left;
+  margin: 45px 0 10px 0;
+  width: 300px;
+}
+.slider-distance > div {
+  position: absolute;
+  left: 13px;
+  right: 15px;
+  height: 14px;
+}
+.slider-distance > div > .left-range {
+  position: absolute;
+  left: 0;
+  height: 14px;
+  border-radius: 10px;
+  background-color: #f00;
+}
+.slider-distance > div > .right-range {
+  position: absolute;
+  right: 0;
+  height: 14px;
+  border-radius: 10px;
+  background-color: #00f;
+}
+.slider-distance > div > .range {
+  position: absolute;
+  left: 0;
+  height: 14px;
+  border-radius: 14px;
+  background-color: #0f0;
+}
+.slider-distance > div > .slider {
+  position: absolute;
+  top: -7px;
+  z-index: 2;
+  height: 28px;
+  width: 10px;
+  text-align: left;
+  margin-left: -5px;
+  cursor: pointer;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.4);
+  background-color: #fff;
+  outline: none;
+}
+.slider-distance > input[type="range"] {
+  position: absolute;
+  pointer-events: none;
+  -webkit-appearance: none;
+  z-index: 3;
+  height: 14px;
+  top: -2px;
+  width: 100%;
+  -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=0)";
+  filter: alpha(opacity=0);
+  -moz-opacity: 0;
+  -khtml-opacity: 0;
+  opacity: 0;
+}
+div.slider-distance > input[type="range"]:focus {
+  outline: none;
+}
+div.slider-distance > input[type="range"]:focus::-webkit-slider-runnable-track {
+  background: transparent;
+  border: transparent;
+}
+div.slider-distance > input[type="range"]::-webkit-slider-thumb {
+  pointer-events: all;
+  width: 28px;
+  height: 28px;
+  border-radius: 0px;
+  border: 0 none;
+  background: red;
+  -webkit-appearance: none;
+}
+.slider-distance > div > .tip {
+  opacity: 1;
+  position: absolute;
+  margin-left: -22px;
+  top: -39px;
+  z-index: 3;
+  border: 2px solid #1abc9c;
+  width: 40px;
+  height: 20px;
+  border-radius: 28px;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+.slider-distance > div > .tip > span {
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 20px;
+}
+.slider-distance:hover > div > .tip {
+  opacity: 1;
+}
+.tip:after {
+  content: "";
+  height: 11px;
+  width: 2px;
+  background: #1abc9c;
+  display: block;
+  margin: auto;
 }
