@@ -20,7 +20,18 @@ class Shader {
   setEvent() {
     this.map.once("styledata", () => {
       this.baseStyle = this.map.getStyle();
-      this.setGrayScale();
+    });
+
+    const grayscaleCheck = this.container.querySelector("#apply-grayscale");
+
+    grayscaleCheck.addEventListener("click", (e) => {
+      if (e.target.checked) {
+        this.displayGrayscaleOptions();
+        this.setGrayScale();
+      } else {
+        this.hideGrayscaleOptions();
+        this.map.setStyle(this.baseStyle);
+      }
     });
 
     const redCoefficient = this.container.querySelector("#red-coefficient");
@@ -74,6 +85,18 @@ class Shader {
         e.target.parentNode.querySelector(".text").innerHTML = this.weights[idx];
         this.setGrayScale();
       });
+    });
+  }
+
+  displayGrayscaleOptions() {
+    this.container.querySelectorAll("#grayscale-container .sub-menu").forEach((sub) => {
+      sub.classList.remove("hidden");
+    });
+  }
+
+  hideGrayscaleOptions() {
+    this.container.querySelectorAll("#grayscale-container .sub-menu").forEach((sub) => {
+      sub.classList.add("hidden");
     });
   }
 
