@@ -2,10 +2,17 @@ class Shader {
   constructor(params) {
     mapboxgl.accessToken = "pk.eyJ1IjoiY3MwOWciLCJhIjoiY2s0N3Uxemp5MGVzcjNrcGE3bG1uaWs1MCJ9.3-rt7AqzSgxkKKOWR3TEFQ";
     this.container = params.container;
-    this.coefficients = [0.2126, 0.7152, 0.0722];
-    this.weights = [0, 0, 0];
+    this.grayscale = {
+      coefficients: [0.2126, 0.7152, 0.0722],
+      weights: [0, 0, 0],
+    };
+    this.hsl = {
+      hue: 0,
+      saturation: 0,
+      lightness: 0,
+    };
     this.map = this.createMap("map");
-    this.setEvent();
+    this.setEvents();
   }
 
   createMap(container) {
@@ -17,13 +24,17 @@ class Shader {
     });
   }
 
-  setEvent() {
+  setEvents() {
     this.map.once("styledata", () => {
       this.baseStyle = this.map.getStyle();
     });
 
-    const grayscaleCheck = this.container.querySelector("#apply-grayscale");
+    this.setGrayscaleEvents(this.container.querySelector("#grayscale-container"));
+    this.setHSLEvents(this.container.querySelector("#hsl-container"));
+  }
 
+  setGrayscaleEvents(container) {
+    const grayscaleCheck = container.querySelector("#apply-grayscale");
     grayscaleCheck.addEventListener("click", (e) => {
       if (e.target.checked) {
         this.displayGrayscaleOptions();
@@ -34,8 +45,8 @@ class Shader {
       }
     });
 
-    const redCoefficient = this.container.querySelector("#red-coefficient");
-    const greenCoefficient = this.container.querySelector("#green-coefficient");
+    const redCoefficient = container.querySelector("#red-coefficient");
+    const greenCoefficient = container.querySelector("#green-coefficient");
 
     redCoefficient.addEventListener("input", (e) => {
       let green = e.target.parentNode.children[2];
@@ -45,9 +56,8 @@ class Shader {
       var children = e.target.parentNode.firstElementChild.children;
       children[0].style.width = children[2].style.left = children[3].style.left = children[5].style.left =
         e.target.value * 100 + "%";
-      children[5].firstElementChild.innerHTML = e.target.value;
-
       children[2].style.width = (green.value - e.target.value) * 100 + "%";
+      children[5].firstElementChild.innerHTML = e.target.value;
       children[6].firstElementChild.innerHTML = (green.value - e.target.value).toFixed(4);
     });
 
@@ -59,30 +69,29 @@ class Shader {
 
       var children = e.target.parentNode.firstElementChild.children;
       children[1].style.width = children[2].style.right = 100 - e.target.value * 100 + "%";
+      children[2].style.width = (e.target.value - red.value) * 100 + "%";
       children[4].style.left = children[6].style.left = e.target.value * 100 + "%";
       children[6].childNodes[1].innerHTML = (e.target.value - red.value).toFixed(4);
-
-      children[2].style.width = (e.target.value - red.value) * 100 + "%";
     });
 
     redCoefficient.addEventListener("change", (e) => {
-      this.coefficients = [+e.target.value, greenCoefficient.value - e.target.value, 1 - greenCoefficient.value].map(
+      this.grayscale.coefficients = [+e.target.value, greenCoefficient.value - e.target.value, 1 - greenCoefficient.value].map(
         (val) => +val.toFixed(4),
       );
       this.setGrayScale();
     });
 
     greenCoefficient.addEventListener("change", (e) => {
-      this.coefficients = [+redCoefficient.value, e.target.value - redCoefficient.value, 1 - e.target.value].map(
+      this.grayscale.coefficients = [+redCoefficient.value, e.target.value - redCoefficient.value, 1 - e.target.value].map(
         (val) => +val.toFixed(4),
       );
       this.setGrayScale();
     });
 
-    this.container.querySelectorAll("[id$=weight").forEach((weight, idx) => {
+    container.querySelectorAll("[id$=weight").forEach((weight, idx) => {
       weight.addEventListener("change", (e) => {
-        this.weights[idx] = (+e.target.value).toFixed(2);
-        e.target.parentNode.querySelector(".text").innerHTML = this.weights[idx];
+        this.grayscale.weights[idx] = (+e.target.value).toFixed(2);
+        e.target.parentNode.querySelector(".text").innerHTML = this.grayscale.weights[idx];
         this.setGrayScale();
       });
     });
@@ -101,8 +110,10 @@ class Shader {
   }
 
   convertToGrayScale(r, g, b) {
-    const y = this.coefficients[0] * r + this.coefficients[1] * g + this.coefficients[2] * b;
-    return [y + y * this.weights[0], y + y * this.weights[1], y + y * this.weights[2]];
+    const coefficients = this.grayscale.coefficients;
+    const weights = this.grayscale.weights;
+    const y = coefficients[0] * r + coefficients[1] * g + coefficients[2] * b;
+    return [y + y * weights[0], y + y * weights[1], y + y * weights[2]];
   }
 
   setGrayScale() {
@@ -119,6 +130,68 @@ class Shader {
     );
   }
 
+  setHSLEvents(container) {
+    container.querySelector("#apply-hsl").addEventListener("click", (e) => {
+      if (e.target.checked) {
+        this.displayHSLOptions();
+        this.setHSL();
+      } else {
+        this.hideHSLOptions();
+        this.map.setStyle(this.baseStyle);
+      }
+    });
+
+    container.querySelector("#hue-scale").addEventListener("input", (e) => {
+      this.hsl.hue = +e.target.value;
+      e.target.nextElementSibling.innerText = e.target.value;
+      this.setHSL();
+    });
+
+    container.querySelector("#saturation-scale").addEventListener("input", (e) => {
+      this.hsl.saturation = +e.target.value;
+      e.target.nextElementSibling.innerText = e.target.value;
+      this.setHSL();
+    });
+
+    container.querySelector("#lightness-scale").addEventListener("input", (e) => {
+      this.hsl.lightness = +e.target.value;
+      e.target.nextElementSibling.innerText = e.target.value;
+      this.setHSL();
+    });
+  }
+
+  displayHSLOptions() {
+    this.container.querySelectorAll("#hsl-container .sub-menu").forEach((sub) => {
+      sub.classList.remove("hidden");
+    });
+  }
+
+  hideHSLOptions() {
+    this.container.querySelectorAll("#hsl-container .sub-menu").forEach((sub) => {
+      sub.classList.add("hidden");
+    });
+  }
+
+  setHSL() {
+    this.map.setStyle(
+      JSON.parse(
+        JSON.stringify(this.baseStyle).replace(/(rgba|hsl)[\%\s(),\d+\.]+/g, (token) => {
+          const split = token.match(/[\d\.]+/g);
+          const hsl = token.startsWith("rgb") ? this.rgbToHsl(...split.map((each) => each / 100)) : split;
+          hsl[0] = (+hsl[0] + this.hsl.hue) % 360;
+          hsl[1] = this.clamp(+hsl[1] + this.hsl.saturation, 0, 100) + "%";
+          hsl[2] = this.clamp(+hsl[2] + this.hsl.lightness, 0, 100) + "%";
+          return `hsla(${hsl.join(",")},${isNaN(split[3]) ? 1 : split[3]})`;
+        }),
+      ),
+    );
+  }
+
+  clamp(value, min, max) {
+    if (value <= min) value = min;
+    else if (value >= max) value = max;
+    return value;
+  }
   /**
    * Converts an HSL color value to RGB. Conversion formula
    * adapted from http://en.wikipedia.org/wiki/HSL_color_space.
@@ -155,5 +228,23 @@ class Shader {
     return [Math.round(r * 255), Math.round(g * 255), Math.round(b * 255)];
   }
 
-  addRGBWeight(r, g, b, weightR = 1, weightG = 1, weightB = 1) {}
+  rgbToHsl(r, g, b) {
+    const [cmax, cmin] = [Math.max(r, g, b), Math.min(r, g, b)];
+    const diff = cmax - cmin;
+    let hue, saturation, lightness;
+    lightness = (cmax + cmin) / 2;
+    saturation = diff / (1 - Math.abs(2 * lightness - 1));
+
+    if (diff === 0) {
+      hue = 0;
+    } else if (cmax === r) {
+      hue = 60 * ((g - b) / diff % 6)
+    } else if (cmax === g) {
+      hue = 60 * ((b - r) / diff + 2);
+    } else if (cmax === b) {
+      hue = 60 * ((r - g) / diff + 4);
+    }
+
+    return [hue, saturation * 100, lightness * 100];
+  }
 }

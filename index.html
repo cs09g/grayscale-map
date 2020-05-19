@@ -56,6 +56,37 @@
           </div>
         </div>
       </div>
+      <div id="hsl-container">
+        <div class="title">HSL</div>
+        <input id="apply-hsl" type="checkbox"><label for="apply-hsl">apply hsl</label>
+        <div class="sub-menu hidden">
+          <h3>Hue weight</h3>
+          <div class="forms">
+            <div class="slider-wrapper">
+              <input id="hue-scale" type="range" value="0" step="0.1" min="0" max="360">
+              <span class="text">0</span>
+            </div>
+          </div>
+        </div>
+        <div class="sub-menu hidden">
+          <h3>Saturation weight</h3>
+          <div class="forms">
+            <div class="slider-wrapper">
+              <input id="saturation-scale" type="range" value="0" step="0.1" min="-100" max="100">
+              <span class="text">0</span>
+            </div>
+          </div>
+        </div>
+        <div class="sub-menu hidden">
+          <h3>Lightness weight</h3>
+          <div class="forms">
+            <div class="slider-wrapper">
+              <input id="lightness-scale" type="range" value="0" step="0.1" min="-100" max="100">
+              <span class="text">0</span>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
   <script src="https://api.mapbox.com/mapbox-gl-js/v1.8.0/mapbox-gl.js"></script>

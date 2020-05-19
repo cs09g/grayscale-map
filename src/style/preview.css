@@ -30,6 +30,9 @@ body {
   display: flex;
   flex-direction: column;
 }
+[id*=-container]:first-child {
+  margin-bottom: 30px;
+}
 .container .sidemenu .forms .slider-wrapper {
   display: flex;
 }
