@@ -26,12 +26,8 @@ body {
   font-size: x-large;
   font-weight: bold;
 }
-.container .sidemenu .forms {
-  display: flex;
-  flex-direction: column;
-}
-[id*=-container]:first-child {
-  margin-bottom: 30px;
+[id*=-container]:not(:first-child) {
+  margin-top: 30px;
 }
 .container .sidemenu .forms .slider-wrapper {
   display: flex;
@@ -150,4 +146,8 @@ div.slider-distance > input[type="range"]::-webkit-slider-thumb {
   background: #1abc9c;
   display: block;
   margin: auto;
+}
+#groups-container .forms {
+  max-height: 300px;
+  overflow-y: scroll;
 }

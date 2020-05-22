@@ -10,6 +10,12 @@
   <div class="container">
     <div id="map" class="map"></div>
     <div class="sidemenu">
+      <div id="groups-container">
+        <div class="title">Groups</div>
+        <div class="sub-menu">
+          <div class="forms"></div>
+        </div>
+      </div>
       <div id="grayscale-container">
         <div class="title">Grayscale</div>
         <input id="apply-grayscale" type="checkbox"><label for="apply-grayscale">apply grayscale</label>
@@ -94,6 +100,7 @@
   <script>
     const shader = new Shader({
       container: document.querySelector(".container"),
+      map: "map",
     });
   </script>
 </body>

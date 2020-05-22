@@ -2,6 +2,7 @@ class Shader {
   constructor(params) {
     mapboxgl.accessToken = "pk.eyJ1IjoiY3MwOWciLCJhIjoiY2s0N3Uxemp5MGVzcjNrcGE3bG1uaWs1MCJ9.3-rt7AqzSgxkKKOWR3TEFQ";
     this.container = params.container;
+    this.groups = [];
     this.grayscale = {
       coefficients: [0.2126, 0.7152, 0.0722],
       weights: [0, 0, 0],
@@ -11,26 +12,56 @@ class Shader {
       saturation: 0,
       lightness: 0,
     };
-    this.map = this.createMap("map");
+    this.createMap(params.map);
     this.setEvents();
   }
 
   createMap(container) {
-    return new mapboxgl.Map({
+    this.map = new mapboxgl.Map({
       container: container,
       style: "mapbox://styles/mapbox/streets-v11",
       center: [126.97646293536866, 37.570620463172745],
       zoom: 9,
+      hash: true,
+      localIdeographFontFamily: false,
+    });
+
+    this.map.once("styledata", () => {
+      this.baseStyle = this.map.getStyle();
+      this.addGroups();
     });
   }
 
-  setEvents() {
-    this.map.once("styledata", () => {
-      this.baseStyle = this.map.getStyle();
-    });
+  addGroups() {
+    const groupsContainer = this.container.querySelector("#groups-container");
+    const groupsForm = groupsContainer.querySelector(".forms");
+    const groups = this.map.getStyle().metadata["mapbox:groups"];
+    let forms = "";
+    for (let group in groups) {
+      forms += `<input type="checkbox" id="${group}" checked><label for="${group}">${groups[group].name}</label>`;
+      this.groups.push(group);
+    }
+    groupsForm.innerHTML = forms;
+  }
 
+  setEvents() {
+    this.setGroupsEvents(this.container.querySelector("#groups-container"));
     this.setGrayscaleEvents(this.container.querySelector("#grayscale-container"));
     this.setHSLEvents(this.container.querySelector("#hsl-container"));
+  }
+
+  setGroupsEvents(container) {
+    const forms = container.querySelector(".forms");
+    forms.addEventListener("click", (e) => {
+      if (e.target.tagName === "INPUT") {
+        const idx = this.groups.indexOf(e.target.id);
+        if (idx === -1) {
+          this.groups.push(e.target.id);
+        } else {
+          this.groups.splice(idx, 1);
+        }
+      }
+    });
   }
 
   setGrayscaleEvents(container) {
@@ -117,17 +148,19 @@ class Shader {
   }
 
   setGrayScale() {
-    this.map.setStyle(
-      JSON.parse(
-        // @TODO: handling hex color
-        JSON.stringify(this.baseStyle).replace(/(rgba|hsl)[\%\s(),\d+\.]+/g, (token) => {
+    const style = JSON.parse(JSON.stringify(this.baseStyle));
+    style.layers.forEach((layer, idx) => {
+      if (layer.metadata && this.isSelectedGroup(layer)) {
+        const stringify = JSON.stringify(layer).replace(/(rgba|hsl)[\%\s(),\d+\.]+/g, (token) => {
           const split = token.match(/[\d\.]+/g);
           const rgb = token.startsWith("hsl") ? this.hslToRgb(...split.map((each) => each / 100)) : split;
           const grayscale = this.convertToGrayScale(...rgb).map((each) => each.toFixed(2));
           return `rgba(${grayscale.join(",")},${isNaN(split[3]) ? 1 : split[3]})`;
-        }),
-      ),
-    );
+        });
+        style.layers[idx] = JSON.parse(stringify);
+      }
+    });
+    this.map.setStyle(style);
   }
 
   setHSLEvents(container) {
@@ -172,19 +205,26 @@ class Shader {
     });
   }
 
+  isSelectedGroup(layer) {
+    return this.groups.indexOf(layer.metadata["mapbox:group"]) !== -1;
+  }
+
   setHSL() {
-    this.map.setStyle(
-      JSON.parse(
-        JSON.stringify(this.baseStyle).replace(/(rgba|hsl)[\%\s(),\d+\.]+/g, (token) => {
+    const style = JSON.parse(JSON.stringify(this.baseStyle));
+    style.layers.forEach((layer, idx) => {
+      if (layer.metadata && this.isSelectedGroup(layer)) {
+        const stringify = JSON.stringify(layer).replace(/(rgba|hsl)[\%\s(),\d+\.]+/g, (token) => {
           const split = token.match(/[\d\.]+/g);
-          const hsl = token.startsWith("rgb") ? this.rgbToHsl(...split.map((each) => each / 100)) : split;
+          const hsl = token.startsWith("rgb") ? this.rgbToHsl(...split.map((each) => +each)) : split;
           hsl[0] = (+hsl[0] + this.hsl.hue) % 360;
           hsl[1] = this.clamp(+hsl[1] + this.hsl.saturation, 0, 100) + "%";
           hsl[2] = this.clamp(+hsl[2] + this.hsl.lightness, 0, 100) + "%";
           return `hsla(${hsl.join(",")},${isNaN(split[3]) ? 1 : split[3]})`;
-        }),
-      ),
-    );
+        });
+        style.layers[idx] = JSON.parse(stringify);
+      }
+    });
+    this.map.setStyle(style);
   }
 
   clamp(value, min, max) {
@@ -192,6 +232,7 @@ class Shader {
     else if (value >= max) value = max;
     return value;
   }
+
   /**
    * Converts an HSL color value to RGB. Conversion formula
    * adapted from http://en.wikipedia.org/wiki/HSL_color_space.
@@ -229,11 +270,19 @@ class Shader {
   }
 
   rgbToHsl(r, g, b) {
+    r /= 255;
+    g /= 255;
+    b /= 255;
     const [cmax, cmin] = [Math.max(r, g, b), Math.min(r, g, b)];
     const diff = cmax - cmin;
     let hue, saturation, lightness;
     lightness = (cmax + cmin) / 2;
-    saturation = diff / (1 - Math.abs(2 * lightness - 1));
+
+    if (diff === 0) {
+      saturation = 0;
+    } else {
+      saturation = (diff / (1 - Math.abs(2 * lightness - 1)));
+    }
 
     if (diff === 0) {
       hue = 0;
